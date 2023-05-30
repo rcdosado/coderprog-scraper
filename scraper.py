@@ -10,12 +10,7 @@ from selectorlib import selectorlib
 from selectorlib import formatter
 
 ROOT_URL = "https://coderprog.com"
-
-
-def clean(text):
-    if text:
-        return " ".join(" ".join(text).split())
-    return None
+SCRAPE_FILE = "scraped_data.json"
 
 
 def read_file_content(filename):
@@ -80,7 +75,7 @@ def _link_generator(pages):
 
 
 def get_response(url):
-    response = requests.get(url, headers=get_headers())
+    response = requests.get(url, verify=False, headers=get_headers())
     if response.status_code != 200:
         print("ERROR {}: ".format(response.status_code))
         exit(-1)
@@ -196,19 +191,15 @@ def transform(json_data):
         print("Some error has occurred.")
     return None
 
+
 def insert_to_json(data, filename):
-    # Load the existing JSON data from the file
-    with open(filename, 'r') as file:
+    with open(filename, "r") as file:
         json_data = json.load(file)
-
-    # Append the new dictionary to the list
     json_data.append(data)
-
-    # Write the updated JSON data back to the file
-    with open(filename, 'w') as file:
+    with open(filename, "w") as file:
         json.dump(json_data, file)
-        
-        
+
+
 def scrape(url):
     response = get_response(url)
     if not response:
@@ -218,6 +209,7 @@ def scrape(url):
         return None
     return transform(html_to_json(response.text))
 
+
 def scrape_test(url):
     response = read_file_content("sample_index_page2.html")
     return transform(html_to_json(response))
@@ -225,11 +217,11 @@ def scrape_test(url):
 
 if __name__ == "__main__":
     counter = 0
-    save_text("scraped_data.json", "[]")
+    save_text(SCRAPE_FILE, "[]")
     for url in _link_generator(9):
         print("[+] scraping : {}".format(url))
-        result_json = scrape(url)
-        insert_to_json(result_json, "scraped_data.json")
+        insert_to_json(scrape(url), SCRAPE_FILE)
+        counter=counter+1
         if counter % 5 == 0:
             print("[+] Sleeping for {} seconds".format(10))
             time.sleep(10)

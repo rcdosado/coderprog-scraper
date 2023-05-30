@@ -38,8 +38,10 @@ def test_content(html, input_yaml, output_yaml):
     )
     output = extractor.extract(html, base_url=base_url)
     expected = yaml.safe_load(output_yaml)
-    __import__('pdb').set_trace()
 
     assert output['coderprog_page'][0]['item_title'] == expected['coderprog_page'][0]['item_title']
+
+def test_json_string():
+    assert {"test":"1234", "test2":"5678"} == {"test":"1234", "test2":"5678"}
 
 
