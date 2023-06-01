@@ -1,8 +1,11 @@
 import os
+import click
+import datetime
+
 import time
 import requests
 import json
-import jsonlines
+import threading
 
 import re
 
@@ -10,7 +13,8 @@ from selectorlib import selectorlib
 from selectorlib import formatter
 
 ROOT_URL = "https://coderprog.com"
-SCRAPE_FILE = "scraped_data.json"
+
+import concurrent.futures
 
 
 def read_file_content(filename):
@@ -75,13 +79,13 @@ def _link_generator(pages):
 
 
 def get_response(url):
-    response = requests.get(url, verify=False, headers=get_headers())
+    response = requests.get(url, verify=True, headers=get_headers())
     if response.status_code != 200:
-        print("ERROR {}: ".format(response.status_code))
-        exit(-1)
+        print("URL request to {} returns ERROR {}: ".format(url, response.status_code))
+        return None
     else:
         #  save_to_file(response)
-        return response
+        return response.text
 
 
 def html_to_json(html):
@@ -124,15 +128,16 @@ def parse_book(json_data):
     size = values.get("size")
 
     return {
-        "book_title": title,
-        "book_url": url,
-        "book_posted": post_date,
-        "book_language": language,
-        "book_published": year,
-        "book_isbn": isbn,
-        "book_num_pages": pages,
-        "book_types_available": formats,
-        "book_size": size,
+        "category": "books",
+        "title": title,
+        "url": url,
+        "posted": post_date,
+        "language": language,
+        "published": year,
+        "isbn": isbn,
+        "num_pages": pages,
+        "types_available": formats,
+        "size": size,
     }
 
 
@@ -162,16 +167,21 @@ def parse_tutorial(json_data):
     size = values.get("size")
 
     return {
-        "tutorial_title": title,
-        "tutorial_url": url,
-        "tutorial_posted": posted,
-        "tutorial_language": language,
-        "tutorial_file_type": file_type,
-        "tutorial_resolution": resolution,
-        "tutorial_audio": audio,
-        "tutorial_duration": duration,
-        "tutorial_size": size,
+        "category": "tutorial",
+        "title": title,
+        "url": url,
+        "posted": posted,
+        "language": language,
+        "file_type": file_type,
+        "resolution": resolution,
+        "audio": audio,
+        "duration": duration,
+        "size": size,
     }
+
+
+def sort_based_on_timestamp(dict_list):
+    return sorted(dict_list, key=lambda x: x["timestamp"])
 
 
 def transform(json_data):
@@ -186,28 +196,19 @@ def transform(json_data):
                 else parse_tutorial(i)
             )
             item_list.append(item)
-        return item_list
+        return item_list  # return a list
     except:
         print("Some error has occurred.")
     return None
 
 
-def insert_to_json(data, filename):
-    with open(filename, "r") as file:
-        json_data = json.load(file)
-    json_data.append(data)
-    with open(filename, "w") as file:
-        json.dump(json_data, file)
-
-
 def scrape(url):
-    response = get_response(url)
-    if not response:
-        print(
-            "Failed to fetch the page, please check `response.html` to see the response received from coderprog.com."
-        )
+    contents = get_response(url)
+    print("attempt scraping : {}".format(url))
+    if not contents:
+        print("Failed to fetch the page, please check the HTTP Status code")
         return None
-    return transform(html_to_json(response.text))
+    return transform(html_to_json(contents))
 
 
 def scrape_test(url):
@@ -215,13 +216,60 @@ def scrape_test(url):
     return transform(html_to_json(response))
 
 
+def locked_file_dump(handle, contents, lock):
+    try:
+        with lock:
+            for item in contents:
+                handle.write(json.dumps(item) + ",\n")
+            handle.flush()
+    except Exception as e:
+        # Handle any exceptions that occurred during scraping
+        print(f"An error occurred: {str(e)}")
+    return
+
+
+@click.command()
+@click.option(
+    "--num_pages", default=5, help="Pages from starting page, default : 5 pages"
+)
+@click.option(
+    "--max_workers", default=3, help="Worker threads to run, default: 3 workers"
+)
+@click.option("--sleep_time", default=7, help="Seconds to sleep, default: 7 seconds")
+@click.option("--when_pause", default=5, help="Pause time (defaults to every 5 MOD)")
+@click.option(
+    "--dump_file",
+    default="scraped_data.json",
+    help="Filename output file",
+)
+def start_scrape(num_pages, max_workers, dump_file, sleep_time, when_pause):
+    lock = threading.Lock()
+    with open(dump_file, "a") as file_writer:
+        file_writer.write("[")
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            counter = 0  
+            scrape_futures = []
+            for url in _link_generator(num_pages):
+                scrape_futures.append(executor.submit(scrape, url))
+                counter += 1
+                if counter % when_pause == 0:
+                    time.sleep(sleep_time)
+            # Iterate over the completed futures
+            for future in concurrent.futures.as_completed(scrape_futures):
+                try:
+                    # Get the result of the completed future
+                    if future.done() and not future.cancelled():
+                        result = future.result()
+                        locked_file_dump(file_writer, result, lock)
+                except Exception as e:
+                    # Handle any exceptions that occurred during scraping
+                    print(f"(start_scrape) : An error occurred: {str(e)}")
+    with open(dump_file, "r+") as f:
+        f.seek(0, 2)
+        f.seek(f.tell() - 3, 0)
+        f.truncate()
+        f.write("\n]")
+
+
 if __name__ == "__main__":
-    counter = 0
-    save_text(SCRAPE_FILE, "[]")
-    for url in _link_generator(9):
-        print("[+] scraping : {}".format(url))
-        insert_to_json(scrape(url), SCRAPE_FILE)
-        counter=counter+1
-        if counter % 5 == 0:
-            print("[+] Sleeping for {} seconds".format(10))
-            time.sleep(10)
+    start_scrape()
