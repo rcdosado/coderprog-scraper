@@ -5,6 +5,12 @@ coderprog.com multi-threaded web scraper (using [selectorlib](https://pypi.org/p
 
 ## scraper.py
 
+Running  `python scraper.py` will scrape first 5 pages from index page, using 3 worker threads, sleeping for 7 seconds every modulus of 5 scrapes, dumping the JSON file to scraped_data.json
+
+Replace `start_scrape()` with  `single_site_scrape_test("https://coderprog.com", "__output__.json")` to scrape single page for scraping single page JSON file
+
+
+### options
 Run `python scraper.py --help` for options
 
 Add `--num_pages <INTEGER>` to set the number of pages starting from index page, defaults to 5
@@ -17,7 +23,7 @@ Add `--when_pause <INTEGER>` to set the when to sleep calculated as num_pages MO
 
 Add `--dump_file <TEXT>` to set the json file name where to save the output JSON scraped filed, defaults to `scraped_data.json` 
 
-##  tests\test_parsers.py
+## Running tests
 
 Run `pytest tests\test_parsers.py` for testing the RegEx patterns used to extract data from the site
 
