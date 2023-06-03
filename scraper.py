@@ -7,29 +7,19 @@ import requests
 import json
 import threading
 
-import re
+from charset_normalizer import detect
+
 
 from selectorlib import selectorlib
 from selectorlib import formatter
-from parsers.book_parser import parse_book
-from parsers.course_parser import parse_course
+from parsers.book_parser import parse_book_metadata
+from parsers.course_parser import parse_course_metadata
+
+from parsers.utils import read_file_content, apply_utf8_encoding_to_json_dumps
 
 ROOT_URL = "https://coderprog.com"
 
 import concurrent.futures
-
-
-def read_file_content(filename):
-    cur_dir = os.path.dirname(__file__)
-    with open(os.path.join(cur_dir, "tests", "data", filename)) as fileobj:
-        content = fileobj.read()
-    return content
-
-
-def save_text(fn, contents):
-    with open(fn, "w") as pf:
-        pf.write(contents)
-    return 0
 
 
 def read_selector_file(filename):
@@ -86,38 +76,42 @@ def html_to_json(html):
         return None
 
 
-def transform(json_data):
+# argument is the output of html_to_json
+def parse_item_metadata(json_data):
     item_list = []
     try:
         data = json_data.get("coderprog_page", [])
         for i in data:
             attribs = i.get("item_attribs")
             item = (
-                parse_book(i)
+                parse_book_metadata(i)
                 if ("PDF" in attribs or "EPUB" in attribs)
-                else parse_course(i)
+                else parse_course_metadata(i)
             )
             item_list.append(item)
         return item_list  # return a list
     except:
-        print("Some error has occurred.")
+        print("[-] Parsing of metadata failed.")
     return None
 
 
 def scrape(url):
     contents = get_response(url)
-    print("attempt scraping : {}".format(url))
+    print("[+] Scraping : {}".format(url))
     if not contents:
         print("Failed to fetch the page, please check the HTTP Status code")
         return None
-    return transform(html_to_json(contents))
+    c = html_to_json(contents)
+    return parse_item_metadata(c)
 
 
-def scrape_test(url):
-    response = read_file_content("sample_index_page.html")
-    jsf = html_to_json(response)
-    ts = transform(jsf)
-    return ts
+def single_site_scrape_test(url, dumpfile):
+    result = scrape(url)
+    file_handler = FileHandler(dumpfile)
+    file_handler.add_opening_bracket()
+    file_handler.locked_file_dump(result)
+    file_handler.add_closing_bracket()
+    return
 
 
 class FileHandler:
@@ -133,7 +127,9 @@ class FileHandler:
             with self.lock:
                 with open(self.filename, "a") as file_writer:
                     for item in contents:
-                        file_writer.write(json.dumps(item, indent=2) + ",\n")
+                        file_writer.write(
+                            apply_utf8_encoding_to_json_dumps(item) + ",\n"
+                        )
                     file_writer.flush()
         except Exception as e:
             # Handle any exceptions that occurred during scraping
@@ -157,16 +153,18 @@ class FileHandler:
     "-n", "--num_pages", default=5, help="Pages from starting page, default : 5 pages"
 )
 @click.option(
-    "-m","--max_workers", default=3, help="Worker threads to run, default: 3 workers"
+    "-m", "--max_workers", default=3, help="Worker threads to run, default: 3 workers"
 )
-@click.option("-s", "--sleep_time", default=7, help="Seconds to sleep, default: 7 seconds")
-@click.option("-p", "--when_pause", default=5, help="Pause time (defaults to every 5 MOD)")
 @click.option(
-    "-d",
-    "--dump_file",
-    default="scraped_data.json",
-    help="Filename output file",
+    "-s", "--sleep_time", default=7, help="Seconds to sleep, default: 7 seconds"
 )
+@click.option(
+    "-p", "--when_pause", default=5, help="Pause time (defaults to every 5 MOD)"
+)
+@click.option(
+    "-d", "--dump_file", default="scraped_data.json", help="Filename output file"
+)
+# supports multi threaded parallel scraping
 def start_scrape(num_pages, max_workers, dump_file, sleep_time, when_pause):
     file_handler = FileHandler(dump_file)
     file_handler.add_opening_bracket()
@@ -184,6 +182,7 @@ def start_scrape(num_pages, max_workers, dump_file, sleep_time, when_pause):
                 # Get the result of the completed future
                 if future.done() and not future.cancelled():
                     result = future.result()
+                    # lock file to handle race conditions
                     file_handler.locked_file_dump(result)
             except Exception as e:
                 # Handle any exceptions that occurred during scraping
@@ -193,4 +192,6 @@ def start_scrape(num_pages, max_workers, dump_file, sleep_time, when_pause):
 
 if __name__ == "__main__":
     start_scrape()
-    #  scrape_test(ROOT_URL);
+    #  single_site_scrape_test("https://coderprog.com", "__output__.json")
+    #  scrape("https://coderprog.com")
+    #  scrape("https://coderprog.com/page/2/")
