@@ -1,22 +1,28 @@
-from parsers.utils import  _extract_values_from_patterns
+from parsers.utils import _extract_values_from_patterns
 
-def parse_course(json_data):
-    title = json_data.get("item_title")
-    url = json_data.get("item_url")
-    posted = json_data.get("item_post_date")
+# Define regex patterns for each value
+course_pattern = {
+    "language": r"(\w+)",
+    "format": r"(MP4|MKV|MP4,MKV|MP4,MKV)",
+    #  "resolution": r"(AVC \w+.\w+)",
+    "resolution": r"(AVC \d+([Ã—×]|x|\d+)+)",
+    #  "resolution": r"\|AVC\s*\b([^|]*)\b\|",
+    #  "resolution": r"\|.AVC\s*\b([^|]*)\b.\|",
+    "audio": r"(AAC \w+.\w+)",
+    "duration": r"\|([^|]+(?i:lectures|lessons)[^|]+)\|",
+    "size": r"(\d+(?:\.\d+)? [GM]B)",
+}
 
-    # Define regex patterns for each value
-    patterns = {
-        "language": r"(\w+)",
-        "format": r"(MP4|MKV|MP4,MKV|MP4,MKV)",
-        "resolution": r"(AVC \w+.\w+)",
-        "audio": r"(AAC \w+.\w+)",
-        "duration": r"\|([^|]+(?i:lectures|lessons)[^|]+)\|",
-        "size": r"(\d+(?:\.\d+)? [GM]B)",
-    }
+
+def parse_course_metadata(raw_json_data):
+    title = raw_json_data.get("item_title")
+    url = raw_json_data.get("item_url")
+    posted = raw_json_data.get("item_post_date")
 
     # Extract values using regex patterns
-    values = _extract_values_from_patterns(patterns, json_data.get("item_attribs"))
+    values = _extract_values_from_patterns(
+        course_pattern, raw_json_data.get("item_attribs")
+    )
 
     language = values.get("language")
     file_type = values.get("format")
@@ -24,7 +30,6 @@ def parse_course(json_data):
     audio = values.get("audio")
     duration = values.get("duration").strip() if (values.get("duration")) else "None"
     size = values.get("size")
-
     return {
         "category": "tutorial",
         "title": title,
