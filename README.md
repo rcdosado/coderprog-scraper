@@ -29,11 +29,11 @@ Run `pytest tests\test_parsers.py` for testing the RegEx patterns used to extrac
 
 Run `pytest tests\test_scraper.py` for testing scraper.py
 
-## features
+## Webscraper Features
 
-multithreading - every URL will be executed by a thread, and then saved one by one, so expect data to be saved in random order, but sure will be fast. unfortunately the site has some anti-scraping mechanism so a system sleep is needed. 
+Multithreading - every URL will be executed by a thread, and then saved one by one, so expect data to be saved in random order, but sure will be fast. unfortunately the site has some anti-scraping mechanism so a system sleep is needed. 
 
-memory efficient - every page JSON output is written in append mode to the dump file, every time page data is written to file, it is then release in memory. 
+Memory efficient - every page JSON output is written in append mode to the dump file, every time page data is written to file, it is then release in memory. 
 
-regex pattern heuristics - resource attribute is parse not basing on the order in the html file, but by its text pattern. so it is basically guessing a token of text to determine its field, this is designed since resources is a mix of a book and a course. 
+Regex pattern heuristics - resource attribute is parse not basing on the order in the html file, but by its text pattern. so it is basically guessing a token of text to determine its field, this is designed since resources is a mix of a book and a course. 
 
