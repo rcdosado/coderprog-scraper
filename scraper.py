@@ -15,7 +15,7 @@ from selectorlib import formatter
 from parsers.book_parser import parse_book_metadata
 from parsers.course_parser import parse_course_metadata
 
-from parsers.utils import read_file_content, apply_utf8_encoding_to_json_dumps
+from parsers.utils import read_file_content, apply_utf8_encoding_to_json_dumps, save_text
 
 ROOT_URL = "https://coderprog.com"
 
@@ -100,48 +100,16 @@ def scrape(url):
     c = html_to_json(contents)
     return parse_item_metadata(c)
 
+# contents is a list of dictionary
+def save_json(dump_file, contents):
+    json_bytes = json.dumps(contents, ensure_ascii=False, indent=2).encode("utf-8")
+    save_text(dump_file, json_bytes.decode())
+    return 
 
 def single_site_scrape_test(url, dumpfile):
     result = scrape(url)
-    file_handler = FileHandler(dumpfile)
-    file_handler.add_opening_bracket()
-    file_handler.locked_file_dump(result)
-    file_handler.add_closing_bracket()
+    save_json(dumpfile, result)
     return
-
-
-class FileHandler:
-    def __init__(self, filename):
-        self.filename = filename
-        self.lock = threading.Lock()
-
-    def add_opening_bracket(self):
-        self.write("[\n")
-
-    def locked_file_dump(self, contents):
-        try:
-            with self.lock:
-                with open(self.filename, "a") as file_writer:
-                    for item in contents:
-                        file_writer.write(
-                            apply_utf8_encoding_to_json_dumps(item) + ",\n"
-                        )
-                    file_writer.flush()
-        except Exception as e:
-            # Handle any exceptions that occurred during scraping
-            print(f"An error occurred: {str(e)}")
-        return
-
-    def write(self, data):
-        with open(self.filename, "a") as file_writer:
-            file_writer.write(data)
-
-    def add_closing_bracket(self):
-        with open(self.filename, "r+") as file:
-            file.seek(0, 2)
-            file.seek(file.tell() - 3, 0)
-            file.truncate()
-            file.write("\n]")
 
 
 @click.command()
@@ -162,11 +130,12 @@ class FileHandler:
 )
 # supports multi threaded parallel scraping
 def start_scrape(num_pages, max_workers, dump_file, sleep_time, when_pause):
-    file_handler = FileHandler(dump_file)
-    file_handler.add_opening_bracket()
+    #  file_handler = FileHandler(dump_file)
+    #  file_handler.add_opening_bracket()
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
         counter = 0
         scrape_futures = []
+        dict_file_to_save = []
         for url in _link_generator(num_pages):
             scrape_futures.append(executor.submit(scrape, url))
             counter += 1
@@ -179,11 +148,13 @@ def start_scrape(num_pages, max_workers, dump_file, sleep_time, when_pause):
                 if future.done() and not future.cancelled():
                     result = future.result()
                     # lock file to handle race conditions
-                    file_handler.locked_file_dump(result)
+                    #  file_handler.locked_file_dump(result)
+                    dict_file_to_save.append(result)
             except Exception as e:
                 # Handle any exceptions that occurred during scraping
                 print(f"(start_scrape) : An error occurred: {str(e)}")
-    file_handler.add_closing_bracket()
+    save_json(dump_file, dict_file_to_save)
+    return 
 
 
 if __name__ == "__main__":
