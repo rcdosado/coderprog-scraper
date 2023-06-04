@@ -15,7 +15,10 @@ from selectorlib import formatter
 from parsers.book_parser import parse_book_metadata
 from parsers.course_parser import parse_course_metadata
 
-from parsers.utils import read_file_content, apply_utf8_encoding_to_json_dumps, save_text
+from parsers.utils import (
+    read_file_content,
+    save_text,
+)
 
 ROOT_URL = "https://coderprog.com"
 
@@ -100,11 +103,13 @@ def scrape(url):
     c = html_to_json(contents)
     return parse_item_metadata(c)
 
+
 # contents is a list of dictionary
 def save_json(dump_file, contents):
     json_bytes = json.dumps(contents, ensure_ascii=False, indent=2).encode("utf-8")
     save_text(dump_file, json_bytes.decode())
-    return 
+    return
+
 
 def single_site_scrape_test(url, dumpfile):
     result = scrape(url)
@@ -129,13 +134,11 @@ def single_site_scrape_test(url, dumpfile):
     "-d", "--dump_file", default="scraped_data.json", help="Filename output file"
 )
 # supports multi threaded parallel scraping
-def start_scrape(num_pages, max_workers, dump_file, sleep_time, when_pause):
-    #  file_handler = FileHandler(dump_file)
-    #  file_handler.add_opening_bracket()
+def start_scrape(num_pages, max_workers, json_file, sleep_time, when_pause):
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
         counter = 0
         scrape_futures = []
-        dict_file_to_save = []
+        list_of_pages = []
         for url in _link_generator(num_pages):
             scrape_futures.append(executor.submit(scrape, url))
             counter += 1
@@ -147,18 +150,15 @@ def start_scrape(num_pages, max_workers, dump_file, sleep_time, when_pause):
                 # Get the result of the completed future
                 if future.done() and not future.cancelled():
                     result = future.result()
-                    # lock file to handle race conditions
-                    #  file_handler.locked_file_dump(result)
-                    dict_file_to_save.append(result)
+                    list_of_pages.append(result)
             except Exception as e:
-                # Handle any exceptions that occurred during scraping
                 print(f"(start_scrape) : An error occurred: {str(e)}")
-    save_json(dump_file, dict_file_to_save)
-    return 
+
+    # list containing list of scraped pages
+    save_json(json_file, list_of_pages)
+    return
 
 
 if __name__ == "__main__":
     start_scrape()
     #  single_site_scrape_test("https://coderprog.com", "__output__.json")
-    #  scrape("https://coderprog.com")
-    #  scrape("https://coderprog.com/page/2/")
