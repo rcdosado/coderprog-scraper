@@ -18,6 +18,7 @@ from parsers.course_parser import parse_course_metadata
 from parsers.utils import (
     read_file_content,
     save_text,
+    save_json,
 )
 
 ROOT_URL = "https://coderprog.com"
@@ -102,13 +103,6 @@ def scrape(url):
         return None
     c = html_to_json(contents)
     return parse_item_metadata(c)
-
-
-# contents is a list of dictionary
-def save_json(dump_file, contents):
-    json_bytes = json.dumps(contents, ensure_ascii=False, indent=2).encode("utf-8")
-    save_text(dump_file, json_bytes.decode())
-    return
 
 
 def single_site_scrape_test(url, dumpfile):
