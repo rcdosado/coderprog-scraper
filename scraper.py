@@ -42,10 +42,6 @@ def get_headers():
     return headers
 
 
-def _splitter(data):
-    return [i.strip() for i in data.split("|")]
-
-
 # base site e.g https://coderprog.com
 def _link_generator(pages):
     yield ROOT_URL

@@ -8,6 +8,8 @@ def save_text(fn, contents):
         pf.write(contents)
     return 0
 
+def _splitter(data):
+    return [i.strip() for i in data.split("|")]
 
 def read_file_content(filename):
     cur_dir = os.path.dirname(__file__)
