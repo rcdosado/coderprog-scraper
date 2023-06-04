@@ -131,7 +131,7 @@ def single_site_scrape_test(url, dumpfile):
     "-p", "--when_pause", default=5, help="Pause time (defaults to every 5 MOD)"
 )
 @click.option(
-    "-d", "--dump_file", default="scraped_data.json", help="Filename output file"
+    "-d", "--json_file", default="scraped_data.json", help="Filename output file"
 )
 # supports multi threaded parallel scraping
 def start_scrape(num_pages, max_workers, json_file, sleep_time, when_pause):
