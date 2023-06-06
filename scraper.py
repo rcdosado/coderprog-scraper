@@ -95,7 +95,16 @@ def parse_item_metadata(json_data):
     return None
 
 
-def scrape(url):
+def scrape(url: str) -> dict:
+    """Scrape a website and return the scraped data.
+
+    Args:
+        url: The URL of the website to scrape.
+
+    Returns:
+        A dictionary containing the scraped data.
+
+    """
     contents = get_response(url)
     print("[+] Scraping : {}".format(url))
     if not contents:
@@ -105,8 +114,18 @@ def scrape(url):
     return parse_item_metadata(c)
 
 
-def single_site_scrape_test(url, dumpfile):
+def single_site_scrape_test(url: str, dumpfile: str) -> None:
+    """Scrape a website and save the scraped data to a file.
+
+    Args:
+        url: The URL of the website to scrape.
+        dumpfile: The file to save the scraped data to.
+
+    """
+    # Scrape the site
     result = scrape(url)
+
+    # s Save the scraped data to a file
     save_json(dumpfile, result)
     return
 
@@ -128,7 +147,22 @@ def single_site_scrape_test(url, dumpfile):
     "-d", "--json_file", default="scraped_data.json", help="Filename output file"
 )
 # supports multi threaded parallel scraping
-def start_scrape(num_pages, max_workers, json_file, sleep_time, when_pause):
+def start_scrape(
+    num_pages: int, max_workers: int, json_file: str, sleep_time: float, when_pause: int
+) -> None:
+    """Starts a parallel scraping process.
+
+    Args:
+        num_pages: The number of pages to scrape.
+        max_workers: The maximum number of workers to use.
+        json_file: The file to save the scraped data to.
+        sleep_time: The time to sleep between each scrape.
+        when_pause: The number of pages to scrape before pausing.
+
+    Returns:
+        None.
+
+    """
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
         counter = 0
         scrape_futures = []
