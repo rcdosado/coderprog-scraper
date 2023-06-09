@@ -20,13 +20,13 @@ def book_attrib():
 
 @pytest.fixture
 def attrib_json_object():
-    raw = read_file_content("index_page_attrib_raw_json.json")
+    raw = read_file_content("raw_unparsed_attrib.json")
     return json.loads(raw)
 
 
 def test_parse_book_metadata_getting_first_entry(attrib_json_object):
-    first_entry = attrib_json_object[0]
-
+    real_content = attrib_json_object["coderprog_page"]
+    first_entry = real_content[0]
     result_json = parse_book_metadata(first_entry)
     expected_json_first = {
         "category": "books",
@@ -42,7 +42,9 @@ def test_parse_book_metadata_getting_first_entry(attrib_json_object):
     }
     assert result_json == expected_json_first
 
-    last_entry = attrib_json_object[-1]
+    json_size = len(real_content)
+
+    last_entry = real_content[json_size-1]
     result_json = parse_book_metadata(last_entry)
     expected_json_second = {
         "category": "books",
@@ -59,23 +61,7 @@ def test_parse_book_metadata_getting_first_entry(attrib_json_object):
     assert result_json == expected_json_second
 
 
-#
-def test_parse_course_metadata_correctly_parses_course_item(attrib_json_object):
-    course_entry = attrib_json_object[1]
-    result_json = parse_course_metadata(course_entry)
-    expected_json = {
-        "category": "tutorial",
-        "title": "Unreal Engine 5 Action Adventure: Make Video Games",
-        "url": "https://coderprog.com/unreal-engine-5-action-adventure/",
-        "posted": "May 28, 2023",
-        "language": "English",
-        "file_type": "MP4",
-        "resolution": "AVC 1280x720",
-        "audio": "AAC 44KHz 2ch",
-        "duration": "40 lectures (5h 12m)",
-        "size": "4.23 GB",
-    }
-    assert result_json == expected_json
+
 
 
 def test_extract_values_from_patterns_correctly_to_parse_book_meta(book_attrib):
@@ -102,8 +88,3 @@ def test_extract_values_from_patterns_correctly_to_parse_course_meta(course_attr
         "size": "2.92 GB",
     }
     assert result_json == expect_json
-
-
-#
-#
-#

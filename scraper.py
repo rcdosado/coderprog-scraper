@@ -110,8 +110,8 @@ def scrape(url: str) -> dict:
     if not contents:
         print("Failed to fetch the page, please check the HTTP Status code")
         return None
-    c = html_to_json(contents)
-    return parse_item_metadata(c)
+    raw_json = html_to_json(contents)
+    return parse_item_metadata(raw_json)
 
 
 def single_site_scrape_test(url: str, dumpfile: str) -> None:

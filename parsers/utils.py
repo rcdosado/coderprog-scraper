@@ -30,12 +30,12 @@ def read_json_file(filename):
         json_object = json.load(fileobj)
     return json_object
 
-def _extract_values_from_patterns(patterns, json_string):
+def _extract_values_from_patterns(patterns, raw_attrib):
     # Extract values using regex patterns
     values = {}
     match = None
     for key, pattern in patterns.items():
-        match = re.search(pattern, json_string)
+        match = re.search(pattern, raw_attrib)
         if match:
             values[key] = match.group(1)
     return values

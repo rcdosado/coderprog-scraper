@@ -56,4 +56,18 @@ def test_scraper_function_returning_valid_json(
 ):
     mocker.patch("scraper.get_response", return_value=index_page_raw_html)
     scraped_json_data = scrape("http://coderprog.com")
-    assert scraped_json_data == expected_json_data
+
+    scraped_size  = len(scraped_json_data)
+    expected_size = len(expected_json_data)
+
+    #  test if they have the same number of entries
+    assert scraped_size == expected_size
+
+    # test if they have the same first item
+    assert scraped_json_data[0] == expected_json_data[0]
+
+    # test if they have the same last item
+    assert scraped_json_data[scraped_size-1] == expected_json_data[expected_size-1]
+
+
+

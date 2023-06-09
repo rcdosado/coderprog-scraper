@@ -4,10 +4,7 @@ from parsers.utils import _extract_values_from_patterns
 course_pattern = {
     "language": r"(\w+)",
     "format": r"(MP4|MKV|MP4,MKV|MP4,MKV)",
-    #  "resolution": r"(AVC \w+.\w+)",
     "resolution": r"(AVC \d+([Ã—×]|x|\d+)+)",
-    #  "resolution": r"\|AVC\s*\b([^|]*)\b\|",
-    #  "resolution": r"\|.AVC\s*\b([^|]*)\b.\|",
     "audio": r"(AAC \w+.\w+)",
     "duration": r"\|([^|]+(?i:lectures|lessons)[^|]+)\|",
     "size": r"(\d+(?:\.\d+)? [GM]B)",
