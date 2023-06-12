@@ -1,8 +1,7 @@
 import pytest
-import os
 import json
 
-from parsers.course_parser import parse_course_metadata, course_pattern
+from parsers.course_parser import course_pattern
 from parsers.utils import _extract_values_from_patterns, read_file_content
 from parsers.book_parser import parse_book_metadata, book_pattern
 
@@ -44,7 +43,7 @@ def test_parse_book_metadata_getting_first_entry(attrib_json_object):
 
     json_size = len(real_content)
 
-    last_entry = real_content[json_size-1]
+    last_entry = real_content[json_size - 1]
     result_json = parse_book_metadata(last_entry)
     expected_json_second = {
         "category": "books",
@@ -59,9 +58,6 @@ def test_parse_book_metadata_getting_first_entry(attrib_json_object):
         "size": "33 MB",
     }
     assert result_json == expected_json_second
-
-
-
 
 
 def test_extract_values_from_patterns_correctly_to_parse_book_meta(book_attrib):

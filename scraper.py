@@ -1,25 +1,15 @@
 import os
 import click
-import datetime
 
 import time
 import requests
-import json
-import threading
-
-from charset_normalizer import detect
-
 
 from selectorlib import selectorlib
 from selectorlib import formatter
 from parsers.book_parser import parse_book_metadata
 from parsers.course_parser import parse_course_metadata
 
-from parsers.utils import (
-    read_file_content,
-    save_text,
-    save_json,
-)
+from parsers.utils import save_json
 
 ROOT_URL = "https://coderprog.com"
 

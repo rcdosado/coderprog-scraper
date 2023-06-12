@@ -16,7 +16,6 @@ def parse_course_metadata(raw_json_data):
     url = raw_json_data.get("item_url")
     posted = raw_json_data.get("item_post_date")
 
-    # Extract values using regex patterns
     values = _extract_values_from_patterns(
         course_pattern, raw_json_data.get("item_attribs")
     )

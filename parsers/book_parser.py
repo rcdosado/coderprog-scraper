@@ -15,9 +15,6 @@ def parse_book_metadata(json_data):
     url = json_data.get("item_url")
     post_date = json_data.get("item_post_date")
 
-    # Define regex patterns for each value
-    # Extract values using regex patterns
-
     values = _extract_values_from_patterns(book_pattern, json_data.get("item_attribs"))
 
     language = values.get("language")
