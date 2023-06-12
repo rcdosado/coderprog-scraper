@@ -4,8 +4,7 @@ import click
 import time
 import requests
 
-from selectorlib import selectorlib
-from selectorlib import formatter
+from selectorlib import selectorlib, formatter
 from parsers.book_parser import parse_book_metadata
 from parsers.course_parser import parse_course_metadata
 
@@ -27,7 +26,6 @@ def read_selector_file(filename="selector_file.yml"):
 
 
 def get_headers():
-    # Creating headers.
     headers = {
         "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
         #  'accept-encoding': 'gzip, deflate, sdch, br',

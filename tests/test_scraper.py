@@ -49,7 +49,7 @@ def test_select_html_to_json_if_it_can_return_10_items_correctly(index_page_raw_
     result = raw_json.get("coderprog_page")
     assert len(result) == 10
 
-
+# mock the HTTP get request, to respect the site
 def test_scraper_function_returning_valid_json(
     mocker, index_page_raw_html, expected_json_data
 ):
