@@ -16,10 +16,13 @@ ROOT_URL = "https://coderprog.com"
 import concurrent.futures
 
 
-def read_selector_file(filename):
+def read_selector_file(filename="selector_file.yml"):
     cur_dir = os.path.dirname(__file__)
-    with open(os.path.join(cur_dir, filename)) as fileobj:
-        content = fileobj.read()
+    try:
+        with open(os.path.join(cur_dir, filename)) as fileobj:
+            content = fileobj.read()
+    except FileNotFoundError as e:
+        return None
     return content
 
 
@@ -52,11 +55,14 @@ def get_response(url):
         return response.text
 
 
-def html_to_json(html):
+def select_html_to_json(html):
     try:
         formatters = formatter.Formatter.get_all()
+        selector_file_contents = read_selector_file("selector_file.yml")
+        if not selector_file_contents:
+            return None
         extractor = selectorlib.Extractor.from_yaml_string(
-            read_selector_file("selector_file.yml"), formatters=formatters
+            selector_file_contents, formatters=formatters
         )
         json_data = extractor.extract(html, base_url="https://coderprog.com")
         return json_data
@@ -66,7 +72,7 @@ def html_to_json(html):
         return None
 
 
-# argument is the output of html_to_json
+# argument is the output of select_html_to_json
 def parse_item_metadata(json_data):
     item_list = []
     try:
@@ -100,7 +106,10 @@ def scrape(url: str) -> dict:
     if not contents:
         print("Failed to fetch the page, please check the HTTP Status code")
         return None
-    raw_json = html_to_json(contents)
+    raw_json = select_html_to_json(contents)
+    if not raw_json:
+        print("Selector file not found. please put in same directory with the scraper")
+        return None
     return parse_item_metadata(raw_json)
 
 
