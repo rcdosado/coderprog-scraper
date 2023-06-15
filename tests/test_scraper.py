@@ -3,7 +3,7 @@ import pytest
 
 from parsers.utils import read_file_content, read_json_file
 
-from scraper import select_html_to_json, scrape, read_selector_file
+from scraper import select_html_to_json, scrape 
 
 
 @pytest.fixture
@@ -34,14 +34,6 @@ def input_yaml():
 @pytest.fixture
 def output_yaml():
     return read_file_content("output.yml")
-
-
-def test_read_selector_from_file_if_blank():
-    cur_dir = os.path.dirname(__file__)
-    selector_file_location = os.path.join(cur_dir, "..", "selector_file.yml")
-    contents = read_selector_file(selector_file_location)
-    assert contents == read_selector_file()
-    assert None == read_selector_file("not_existing_selector_file.yml")
 
 
 def test_select_html_to_json_if_it_can_return_10_items_correctly(index_page_raw_html):

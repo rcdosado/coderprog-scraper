@@ -15,16 +15,6 @@ ROOT_URL = "https://coderprog.com"
 import concurrent.futures
 
 
-def read_selector_file(filename="selector_file.yml"):
-    cur_dir = os.path.dirname(__file__)
-    try:
-        with open(os.path.join(cur_dir, filename)) as fileobj:
-            content = fileobj.read()
-    except FileNotFoundError as e:
-        return None
-    return content
-
-
 def get_headers():
     headers = {
         "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
@@ -56,11 +46,27 @@ def get_response(url):
 def select_html_to_json(html):
     try:
         formatters = formatter.Formatter.get_all()
-        selector_file_contents = read_selector_file("selector_file.yml")
-        if not selector_file_contents:
-            return None
+        selector_text = """
+        coderprog_page:
+            css: article.latestPost.excerpt
+            multiple: true
+            type: Text
+            children:
+                item_url:
+                    css: h2>a
+                    type: Link
+                item_title:
+                    css: h2.title
+                    type: Text
+                item_post_date:
+                    css: 'span.thetime span'
+                    type: Text
+                item_attribs:
+                    css: p
+                    type: Text
+        """
         extractor = selectorlib.Extractor.from_yaml_string(
-            selector_file_contents, formatters=formatters
+            selector_text, formatters=formatters
         )
         json_data = extractor.extract(html, base_url="https://coderprog.com")
         return json_data
@@ -185,5 +191,5 @@ def start_scrape(
 
 
 if __name__ == "__main__":
-    start_scrape()
-    #  single_site_scrape_test("https://coderprog.com", "__output__.json")
+    #  start_scrape()
+    single_site_scrape_test("https://coderprog.com", "__output__.json")
