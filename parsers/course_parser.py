@@ -13,6 +13,7 @@ course_pattern = {
 
 def parse_course_metadata(raw_json_data):
     title = raw_json_data.get("item_title")
+    thumbnail = raw_json_data.get("item_thumbnail")
     url = raw_json_data.get("item_url")
     posted = raw_json_data.get("item_post_date")
 
@@ -30,6 +31,7 @@ def parse_course_metadata(raw_json_data):
         "category": "tutorial",
         "title": title,
         "url": url,
+        "thumbnail": thumbnail,
         "posted": posted,
         "language": language,
         "file_type": file_type,

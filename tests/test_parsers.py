@@ -19,7 +19,7 @@ def book_attrib():
 
 @pytest.fixture
 def attrib_json_object():
-    raw = read_file_content("raw_unparsed_attrib.json")
+    raw = read_file_content("added_thumbnail_data.json")
     return json.loads(raw)
 
 
@@ -31,6 +31,7 @@ def test_parse_book_metadata_getting_first_entry(attrib_json_object):
         "category": "books",
         "title": "Geometry for Programmers",
         "url": "https://coderprog.com/geometry-programmers-kaleniuk/",
+        "thumbnail": "https://coderprog.com/wp-content/uploads/geometry-programmers-kaleniuk.jpg",
         "posted": "May 28, 2023",
         "language": "English",
         "published": "2023",
@@ -49,6 +50,7 @@ def test_parse_book_metadata_getting_first_entry(attrib_json_object):
         "category": "books",
         "title": "Applications of Machine Learning in Digital Healthcare",
         "url": "https://coderprog.com/applications-ml-digital-healthcare/",
+        "thumbnail": "https://coderprog.com/wp-content/uploads/applications-ml-digital-healthcare.jpg",
         "posted": "May 28, 2023",
         "language": "English",
         "published": "2023",

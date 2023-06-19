@@ -23,7 +23,7 @@ def get_headers():
         "cache-control": "max-age=0",
         "upgrade-insecure-requests": "1",
         "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 "
-                      "Safari/537.36",
+        "Safari/537.36",
     }
     return headers
 
@@ -53,6 +53,9 @@ def select_html_to_json(html):
             multiple: true
             type: Text
             children:
+                item_thumbnail:
+                    css: article.latestPost img.aligncenter
+                    type: Image
                 item_url:
                     css: h2>a
                     type: Link

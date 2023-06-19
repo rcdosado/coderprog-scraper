@@ -14,6 +14,7 @@ def parse_book_metadata(json_data):
     title = json_data.get("item_title")
     url = json_data.get("item_url")
     post_date = json_data.get("item_post_date")
+    thumbnail = json_data.get("item_thumbnail")
 
     values = _extract_values_from_patterns(book_pattern, json_data.get("item_attribs"))
 
@@ -28,6 +29,7 @@ def parse_book_metadata(json_data):
         "category": "books",
         "title": title,
         "url": url,
+        "thumbnail":thumbnail,
         "posted": post_date,
         "language": language,
         "published": year,
