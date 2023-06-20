@@ -32,16 +32,6 @@ def with_thumbnail():
     return read_json_file("added_thumbnail_data.json")
 
 
-@pytest.fixture
-def input_yaml():
-    return read_file_content("input.yml")
-
-
-@pytest.fixture
-def output_yaml():
-    return read_file_content("output.yml")
-
-
 def test_selector_if_returning_thumbnail_value(index_page_raw_html, with_thumbnail):
     formatters = formatter.Formatter.get_all()
     selector_text = """
