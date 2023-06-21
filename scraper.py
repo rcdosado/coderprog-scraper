@@ -34,8 +34,8 @@ def _link_generator(pages):
     for i in range(2, pages + 1):
         yield ROOT_URL + "/page/{}/".format(i)
 
-
-def get_response(url):
+# get the raw contents of a website given the URL
+def fetch_page(url):
     response = requests.get(url, verify=True, headers=get_headers())
     if response.status_code != 200:
         print("URL request to {} returns ERROR {}: ".format(url, response.status_code))
@@ -109,7 +109,7 @@ def scrape(url: str) -> dict:
         A dictionary containing the scraped data.
 
     """
-    contents = get_response(url)
+    contents = fetch_page(url)
     print("[+] Scraping : {}".format(url))
     if not contents:
         print("Failed to fetch the page, please check the HTTP Status code")

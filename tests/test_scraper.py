@@ -75,7 +75,7 @@ def test_select_html_to_json_if_it_can_return_10_items_correctly(index_page_raw_
 def test_scraper_function_returning_valid_json(
     mocker, index_page_raw_html, expected_json_data
 ):
-    mocker.patch("scraper.get_response", return_value=index_page_raw_html)
+    mocker.patch("scraper.fetch_page", return_value=index_page_raw_html)
     scraped_json_data = scrape("http://coderprog.com")
 
     scraped_size = len(scraped_json_data)
