@@ -4,7 +4,7 @@ import pytest
 from selectorlib import selectorlib, formatter
 from parsers.utils import read_file_content, read_json_file, save_json
 
-from scraper import select_html_to_json, scrape
+from scraper import select_html_to_json, scrape, _link_generator, ROOT_URL
 
 
 @pytest.fixture
@@ -63,6 +63,16 @@ def test_selector_if_returning_thumbnail_value(index_page_raw_html, with_thumbna
     json_data = extractor.extract(index_page_raw_html, base_url="https://coderprog.com")
 
     assert json_data == expected_data
+
+
+def test_link_generator_generating_correct_links():
+    # collect yields
+    yields = []
+    for url in _link_generator(3):
+        yields.append(url)
+
+    assert yields[0] == ROOT_URL
+    assert yields[1] == ROOT_URL + "/page/2/"
 
 
 def test_select_html_to_json_if_it_can_return_10_items_correctly(index_page_raw_html):
