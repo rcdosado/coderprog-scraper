@@ -71,8 +71,12 @@ def test_link_generator_generating_correct_links():
     for url in _link_generator(3):
         yields.append(url)
 
-    assert yields[0] == ROOT_URL
-    assert yields[1] == ROOT_URL + "/page/2/"
+    assert (
+        yields[0] == ROOT_URL
+        and yields[1] == ROOT_URL + "/page/2/"
+        and yields[2] == ROOT_URL + "/page/3/"
+        and len(yields) == 3
+    )
 
 
 def test_select_html_to_json_if_it_can_return_10_items_correctly(index_page_raw_html):
